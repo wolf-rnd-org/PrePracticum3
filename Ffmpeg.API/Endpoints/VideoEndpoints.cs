@@ -20,6 +20,10 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
+            app.MapPost("/api/video/rotation", RotateVideo)
+               .DisableAntiforgery()
+               .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -95,5 +99,59 @@ namespace FFmpeg.API.Endpoints
             }
 
         }
+
+        private static async Task<IResult> RotateVideo(
+    HttpContext context,
+    [FromForm] RotationDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.InputFile == null)
+                    return Results.BadRequest("Video file is required");
+
+                string inputFile = await fileService.SaveUploadedFileAsync(dto.InputFile);
+                string outputFile = await fileService.GenerateUniqueFileNameAsync(Path.GetExtension(dto.InputFile.FileName));
+
+                var filesToCleanup = new List<string> { inputFile, outputFile };
+
+                try
+                {
+                    var command = ffmpegService.CreateRotationCommand();
+                    var result = await command.ExecuteAsync(new RotationModel
+                    {
+                        InputFile = inputFile,
+                        OutputFile = outputFile,
+                        Angle = dto.Angle
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg rotation failed: {ErrorMessage}, Command: {Command}", result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to rotate video: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    var fileBytes = await fileService.GetOutputFileAsync(outputFile);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(fileBytes, "video/mp4", dto.InputFile.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error during rotation");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in RotateVideo endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
     }
 }

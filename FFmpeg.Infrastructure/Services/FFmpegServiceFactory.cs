@@ -14,6 +14,7 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<RotationModel> CreateRotationCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -35,6 +36,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<RotationModel> CreateRotationCommand()
+        {
+            return new RotationCommand(_executor, _commandBuilder);
         }
     }
 }
