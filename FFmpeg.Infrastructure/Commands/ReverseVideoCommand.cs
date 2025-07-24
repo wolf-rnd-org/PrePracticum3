@@ -20,10 +20,12 @@ namespace FFmpeg.Infrastructure.Commands
         }
         public async Task<CommandResult> ExecuteAsync(ReverseVideoModel model)
         {
+            Console.WriteLine(model.InputFile+"+======================");
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
                 .AddOption($"-vf reverse")
-                .SetInput(model.OutputFile);        
+                .SetOutput(model.OutputFile);        
+            Console.WriteLine(model.OutputFile+"98765555555555555555555555555555");
 
             return await RunAsync();
         }
