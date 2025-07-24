@@ -1,12 +1,6 @@
-﻿using FFmpeg.Infrastructure.Commands;
-using FFmpeg.Infrastructure.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FFmpeg.Infrastructure.Services;
 
-namespace Ffmpeg.Command.Commands
+namespace FFmpeg.Infrastructure.Commands
 {
     public abstract class BaseCommand
     {
