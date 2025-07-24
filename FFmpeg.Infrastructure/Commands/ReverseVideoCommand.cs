@@ -1,4 +1,5 @@
 ﻿using Ffmpeg.Command.Commands;
+using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace FFmpeg.Infrastructure.Commands
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public WatermarkCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public ReverseVideoCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
@@ -22,8 +23,7 @@ namespace FFmpeg.Infrastructure.Commands
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
                 .AddOption($"-vf reverse")
-                .SetInput(model.OutputFile);
-        
+                .SetInput(model.OutputFile);        
 
             return await RunAsync();
         }
