@@ -29,17 +29,14 @@ namespace FFmpeg.Infrastructure.Commands
                     ErrorMessage = "At least two input files are required for audio mixing."
                 };
             }
-
             // Add all input files
             foreach (var inputFile in model.InputFiles)
             {
                 _commandBuilder.SetInput(inputFile);
             }
-
             // Build the amix filter
             string filter = $"amix=inputs={model.InputsCount}";
             _commandBuilder.AddFilterComplex(filter);
-
             // Set output file
             _commandBuilder.SetOutput(model.OutputFile);
 
