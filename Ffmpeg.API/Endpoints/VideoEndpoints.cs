@@ -21,9 +21,8 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
             app.MapPost("/api/video/reverse", ReverseVideo)
- .DisableAntiforgery()
- .WithMetadata(new RequestSizeLimitAttribute(104857600));
-
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(104857600));
         }
 
         private static async Task<IResult> AddWatermark(
@@ -100,8 +99,8 @@ namespace FFmpeg.API.Endpoints
 
         }
         private static async Task<IResult> ReverseVideo(
- HttpContext context,
- [FromForm] ReverseVideoDto dto)
+              HttpContext context,
+             [FromForm] ReverseVideoDto dto)
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
