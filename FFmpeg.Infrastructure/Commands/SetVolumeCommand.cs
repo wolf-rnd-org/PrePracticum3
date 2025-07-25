@@ -22,9 +22,12 @@ namespace FFmpeg.Infrastructure.Commands
 
         public async Task<CommandResult> ExecuteAsync(SetVolumeModel model)
         {
+            if (model == null) throw new ArgumentNullException(nameof(model));
+            if (model.Volume <= 0) throw new ArgumentException("Volume must be greater than 0");
+
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
-                .AddOption($"-af "volume={model.Volume}"")
+                .AddFilterComplex($"volume={model.Volume}")
                 .SetOutput(model.OutputFile);
 
             return await RunAsync();

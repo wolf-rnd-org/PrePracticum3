@@ -2,8 +2,7 @@ namespace FFmpeg.API.DTOs
 {
     public class SetVolumeDto
     {
-        public string InputFile { get; set; }
-        public string OutputFile { get; set; }
-        public double Volume { get; set; }
+        public IFormFile VideoFile { get; set; }
+        public double Volume { get; set; } = 1.0;
     }
 }
