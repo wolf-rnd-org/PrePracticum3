@@ -20,10 +20,6 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
-
-            app.MapPost("/api/video/setvolume", SetVolume)
-                .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
             app.MapPost("/api/video/volume", SetVolume)
                  .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
@@ -42,18 +38,18 @@ namespace FFmpeg.API.Endpoints
                 return Results.BadRequest("Valid video file and volume level are required.");
             }
 
-            string inputFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+            string inputFile = await fileService.SaveUploadedFileAsync(dto.VideoFile);
             string extension = Path.GetExtension(dto.VideoFile.FileName);
-            string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
-            var filesToCleanup = new List<string> { inputFileName, outputFileName };
+            string outputFile = await fileService.GenerateUniqueFileNameAsync(extension);
+            var filesToCleanup = new List<string> { inputFile, outputFile };
 
             try
             {
                 var command = ffmpegService.CreateSetVolumeCommand();
                 var result = await command.ExecuteAsync(new SetVolumeModel
                 {
-                    InputFile = inputFileName,
-                    OutputFile = outputFileName,
+                    InputFile = inputFile,
+                    OutputFile = outputFile,
                     Volume = dto.Volume
                 });
 
@@ -64,17 +60,18 @@ namespace FFmpeg.API.Endpoints
                     return Results.Problem("Failed to adjust volume: " + result.ErrorMessage, statusCode: 500);
                 }
 
-                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                byte[] outputBytes = await fileService.GetOutputFileAsync(outputFile);
                 _ = fileService.CleanupTempFilesAsync(filesToCleanup);
-                return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+                return Results.File(outputBytes, "video/mp4", dto.VideoFile.FileName);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error processing volume adjustment");
+                logger.LogError(ex, "Error processing SetVolume");
                 _ = fileService.CleanupTempFilesAsync(filesToCleanup);
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
+
 
 
         private static async Task<IResult> AddWatermark(
