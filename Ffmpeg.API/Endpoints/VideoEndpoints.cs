@@ -1,15 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
+﻿
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using FFmpeg.API.DTOs;
 using FFmpeg.Core.Interfaces;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Services;
-using Microsoft.Extensions.Logging;
+using FFmpeg.Infrastructure.Commands;
 
 namespace FFmpeg.API.Endpoints
 {
@@ -20,6 +15,23 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
+            app.MapPost("/convert-format", async (ConvertFormatRequest request) =>
+            {
+                var ffmpegPath = "ffmpeg"; // או נתיב מלא אם צריך, לדוגמה: @"C:\ffmpeg\bin\ffmpeg.exe"
+                var executor = new FFmpegExecutor(ffmpegPath);
+
+                var command = new ConvertFormatCommand(executor, request.InputFileName, request.OutputFileName);
+                var ffmpegArgs = command.BuildCommand();
+
+                var (success, output, error) = await executor.RunCommandAsync(ffmpegArgs);
+
+                if (!success)
+                    return Results.Problem("FFmpeg execution failed: " + error);
+
+                return Results.Ok(new { Message = "Conversion completed", Output = output });
+            });
+
         }
 
         private static async Task<IResult> AddWatermark(
