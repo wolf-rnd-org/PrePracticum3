@@ -20,6 +20,10 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
+            app.MapPost("/api/video/create-preview", CreatePreview)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(104857600));
         }
 
         private static async Task<IResult> AddWatermark(
@@ -95,5 +99,69 @@ namespace FFmpeg.API.Endpoints
             }
 
         }
+
+        private static async Task<IResult> CreatePreview(
+        HttpContext context,
+        [FromForm] CreatePreviewDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null)
+                {
+                    return Results.BadRequest("Video file is required");
+                }
+
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+
+                string outputFileName = dto.OutputFileName;
+                if (string.IsNullOrEmpty(outputFileName))
+                {
+                    outputFileName = await fileService.GenerateUniqueFileNameAsync(".jpg");
+                }
+
+                var filesToCleanup = new List<string> { videoFileName, outputFileName };
+
+                try
+                {
+                    var command = ffmpegService.CreatePreviewCommand();
+
+                    var result = await command.ExecuteAsync(new CreatePreviewModel
+                    {
+                        InputFile = videoFileName,
+                        OutputFile = outputFileName,
+                        SeekTime = dto.SeekTime ?? "00:00:05"
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg create preview failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to create preview: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(fileBytes, "image/jpeg", outputFileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing create preview request");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in CreatePreview endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
     }
 }
