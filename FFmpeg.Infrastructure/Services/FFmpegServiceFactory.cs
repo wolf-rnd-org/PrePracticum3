@@ -16,7 +16,7 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommandRunner GetAddTextCommand(); // הוספה נחוצה
-
+        ICommand<ReverseVideoModel> CreateReverseVideoCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -43,6 +43,10 @@ namespace FFmpeg.Infrastructure.Services
         public ICommandRunner GetAddTextCommand()
         {
             return new AddTextCommand(); // יכול להוסיף לוגים אם צריך
+       }
+         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
+        {
+            return new ReverseVideoCommand(_executor, _commandBuilder);
         }
     }
 }
