@@ -26,24 +26,13 @@ namespace Ffmpeg.Command.Commands
         {
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
-                .AddOption($"-map 0:a?")
-                .AddOption($"-c:a copy");
-
-            CommandBuilder.SetOutput(model.OutputFile);
-
-            CommandBuilder = _commandBuilder
-               .SetInput(model.InputFile)
-               .AddFilterComplex($"setpts={model.SpeedFactor}*PTS")
-               .SetVideoCodec(model.VideoCodec);
-
+                .SetOutput(model.OutputFile)
+                .AddOption($"-vf \"setpts={model.SpeedFactor}*PTS\"")
+                .SetVideoCodec(model.VideoCodec);
             if (model.MaintainAudio)
             {
-                double audioTempo = 1.0 / model.SpeedFactor;
-                CommandBuilder.AddOption($"-filter:a atempo={audioTempo}");
+                CommandBuilder.AddOption($"-filter:a atempo={model.SpeedFactor}");
             }
-
-            CommandBuilder.SetOutput(model.OutputFile);
-
             return await RunAsync();
         }
     }
