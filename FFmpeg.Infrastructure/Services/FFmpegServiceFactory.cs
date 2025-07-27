@@ -14,7 +14,11 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+<<<<<<< HEAD
         ICommand<TimestampModel> CreateTimestampCommand();
+=======
+        ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+>>>>>>> d640fa28f9f2ae54b7e1f5cea7759c722e1cafe1
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -37,10 +41,16 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+<<<<<<< HEAD
 
         public ICommand<TimestampModel> CreateTimestampCommand()
         {
             return new TimestampCommand(_executor, _commandBuilder);
+=======
+        public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
+        {
+            return new ReverseVideoCommand(_executor, _commandBuilder);
+>>>>>>> d640fa28f9f2ae54b7e1f5cea7759c722e1cafe1
         }
     }
 }
