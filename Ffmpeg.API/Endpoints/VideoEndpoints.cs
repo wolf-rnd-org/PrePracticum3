@@ -25,7 +25,7 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/reverse", ReverseVideo)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
-            app.MapPost("/api/video/replace-green-screen", ReverseVideo)
+            app.MapPost("/api/video/replace-green-screen", ReplaceGreenScreen)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
