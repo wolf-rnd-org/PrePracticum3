@@ -15,6 +15,8 @@ namespace FFmpeg.API.Endpoints
 {
     public static class VideoEndpoints
     {
+        private const int MaxUploadSize = 104_857_600; // 100 MB
+
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
@@ -22,7 +24,7 @@ namespace FFmpeg.API.Endpoints
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
             app.MapPost("/api/video/reverse", ReverseVideo)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600));
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
 
         private static async Task<IResult> AddWatermark(
@@ -108,25 +110,17 @@ namespace FFmpeg.API.Endpoints
 
             try
             {
-                // Validate request
                 if (dto.VideoFile == null)
                 {
                     return Results.BadRequest("Video file is required");
                 }
-
-                // Save uploaded video file
                 string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
-
-                // Generate output filename
                 string extension = Path.GetExtension(dto.VideoFile.FileName);
                 string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
-
-                // Track files to clean up
                 List<string> filesToCleanup = new List<string> { videoFileName, outputFileName };
 
                 try
                 {
-                    // Create and execute the reverse command
                     var command = ffmpegService.CreateReverseVideoCommand();
                     var result = await command.ExecuteAsync(new ReverseVideoModel
                     {
@@ -140,20 +134,14 @@ namespace FFmpeg.API.Endpoints
                             result.ErrorMessage, result.CommandExecuted);
                         return Results.Problem("Failed to reverse video: " + result.ErrorMessage, statusCode: 500);
                     }
-
-                    // Read the output file
                     byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
-
-                    // Clean up temporary files
                     _ = fileService.CleanupTempFilesAsync(filesToCleanup);
 
-                    // Return the file
                     return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Error processing reverse video request");
-                    // Clean up on error
                     _ = fileService.CleanupTempFilesAsync(filesToCleanup);
                     throw;
                 }
