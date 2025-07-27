@@ -3,8 +3,6 @@ using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using Microsoft.Extensions.Configuration;
-using FFmpeg.Core.Models;
-using FFmpeg.Infrastructure.Commands;
 
 
 namespace FFmpeg.Infrastructure.Services
