@@ -15,6 +15,7 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<AudioMixModel> CreateAudioMixCommand();
+        ICommand<ReverseVideoModel> CreateReverseVideoCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -40,6 +41,10 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<AudioMixModel> CreateAudioMixCommand()
         {
             return new AudioMixCommand(_executor, _commandBuilder);
+        }
+        public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
+        {
+            return new ReverseVideoCommand(_executor, _commandBuilder);
         }
     }
 }
