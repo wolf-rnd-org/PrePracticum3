@@ -20,6 +20,10 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
+            app.MapPost("/api/video/cut", CutVideo)
+               .DisableAntiforgery()
+               .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -96,7 +100,72 @@ namespace FFmpeg.API.Endpoints
 
         }
 
-      
+        private static async Task<IResult> CutVideo(
+      HttpContext context,
+      [FromForm] CutVideoDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                // ולידציה בסיסית
+                if (dto.VideoFile == null)
+                    return Results.BadRequest("Video file is required");
+
+                if (string.IsNullOrEmpty(dto.StartTime) || string.IsNullOrEmpty(dto.EndTime))
+                    return Results.BadRequest("Start time and end time are required");
+
+                // שמירת קובץ הוידאו שהועלה
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+
+                // יצירת שם ייחודי לקובץ הפלט
+                string extension = Path.GetExtension(dto.VideoFile.FileName);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+
+                var filesToCleanup = new List<string> { videoFileName, outputFileName };
+
+                try
+                {
+                    // יצירת הפקודה וחיתוך הוידאו
+                    var command = ffmpegService.CreateCutVideoCommand();
+                    var result = await command.ExecuteAsync(new CutVideoModel
+                    {
+                        InputFile = videoFileName,
+                        OutputFile = outputFileName,
+                        StartTime = dto.StartTime,
+                        EndTime = dto.EndTime
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to cut video: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    // קריאה של קובץ התוצאה ושליחתו למשתמש
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                    // ניקוי קבצים זמניים
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing cut video request");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in CutVideo endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
 
     }
 }
