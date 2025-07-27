@@ -1,5 +1,6 @@
 ﻿using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
+using FFmpeg.Core.Interfaces;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,8 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommandRunner GetAddTextCommand(); // הוספה נחוצה
+
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -35,6 +38,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+
+        public ICommandRunner GetAddTextCommand()
+        {
+            return new AddTextCommand(); // יכול להוסיף לוגים אם צריך
         }
     }
 }
