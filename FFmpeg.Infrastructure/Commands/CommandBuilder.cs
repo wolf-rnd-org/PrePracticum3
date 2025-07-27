@@ -145,7 +145,6 @@ namespace FFmpeg.Infrastructure.Commands
             if (_filters.Count > 0)
             {
                 command.Add($"-filter_complex \"{string.Join(';', _filters)}\"");
-                command.Add("-map \"[out]\"");
             }
 
             // Add options

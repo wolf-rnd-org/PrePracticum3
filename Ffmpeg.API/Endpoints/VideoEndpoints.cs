@@ -20,6 +20,9 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+            app.MapPost("/api/audio/mix", MixAudio)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -94,6 +97,81 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
 
+        }
+
+        private static async Task<IResult> MixAudio(HttpContext context, [FromForm] AudioMixDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                // Validate request
+                if (dto.InputFile1 == null || dto.InputFile2 == null)
+                {
+                    return Results.BadRequest("Both audio files are required");
+                }
+                if (string.IsNullOrWhiteSpace(dto.OutputFileName))
+                {
+                    return Results.BadRequest("Output file name is required");
+                }
+
+                // Save uploaded files
+                string audioFileName1 = await fileService.SaveUploadedFileAsync(dto.InputFile1);
+                string audioFileName2 = await fileService.SaveUploadedFileAsync(dto.InputFile2);
+
+                // Use the output file name provided by the user, sanitize if needed
+                string outputFileName = Path.GetFileName(dto.OutputFileName); // basic sanitization
+                // Ensure the file name has an extension (default to .mp3)
+                if (string.IsNullOrWhiteSpace(Path.GetExtension(outputFileName)))
+                {
+                    outputFileName += ".mp3";
+                }
+                string outputFilePath = Path.Combine(Path.GetTempPath(), outputFileName);
+
+                // Track files to clean up
+                List<string> filesToCleanup = new List<string> { audioFileName1, audioFileName2, outputFileName };
+
+                try
+                {
+                    // Create and execute the audio mix command
+                    var command = ffmpegService.CreateAudioMixCommand();
+                    var result = await command.ExecuteAsync(new AudioMixModel
+                    {
+                        InputFile1 = audioFileName1,
+                        InputFile2 = audioFileName2,
+                        OutputFile = outputFileName
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to mix audio: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    // Read the output file
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                    // Clean up temporary files
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    // Return the file
+                    return Results.File(fileBytes, "audio/mpeg", outputFileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing audio mix request");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in MixAudio endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
         }
     }
 }
