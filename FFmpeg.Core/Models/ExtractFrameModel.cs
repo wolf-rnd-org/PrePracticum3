@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    public class FrameExtractionModel
+    public class ExtractFrameModel
     {
             public string InputFile { get; set; } 
             public string TimeStamp { get; set; } 
-            public string OutputImage { get; set; }
+            public string OutputFile { get; set; }
     }
 }

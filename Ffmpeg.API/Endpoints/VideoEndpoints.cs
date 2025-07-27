@@ -25,6 +25,9 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/reverse", ReverseVideo)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            app.MapPost("/api/video/extract-frame", ExtractFrame)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
 
         private static async Task<IResult> AddWatermark(
@@ -149,6 +152,51 @@ namespace FFmpeg.API.Endpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in ReverseVideo endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+        private static async Task<IResult> ExtractFrame(
+            HttpContext context,
+            [FromForm] ExtractFrameDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null || string.IsNullOrWhiteSpace(dto.TimeStamp))
+                {
+                    return Results.BadRequest("Video file and timestamp are required");
+                }
+
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(".png");
+                List<string> filesToCleanup = new() { videoFileName, outputFileName };
+
+                var command = ffmpegService.CreateExtractFrameCommand();
+                var result = await command.ExecuteAsync(new ExtractFrameModel
+                {
+                    InputFile = videoFileName,
+                    TimeStamp = dto.TimeStamp,
+                    OutputFile = outputFileName
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg extract frame failed: {ErrorMessage}, Command: {Command}",
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to extract frame: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                return Results.File(fileBytes, "image/png", "frame.png");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in ExtractFrame endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
