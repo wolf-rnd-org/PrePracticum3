@@ -15,7 +15,11 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
+
+        ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -39,9 +43,16 @@ namespace FFmpeg.Infrastructure.Services
             return new WatermarkCommand(_executor, _commandBuilder);
         }
 
+
         public ICommand<SetVolumeModel> CreateSetVolumeCommand()
         {
             return new SetVolumeCommand(_executor, _commandBuilder);
+        }
+
+
+        public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
+        {
+            return new ReverseVideoCommand(_executor, _commandBuilder);
         }
 
     }
