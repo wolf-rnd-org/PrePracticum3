@@ -15,9 +15,7 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
-
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -40,13 +38,10 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
-
-
         public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
-
 
     }
 }
