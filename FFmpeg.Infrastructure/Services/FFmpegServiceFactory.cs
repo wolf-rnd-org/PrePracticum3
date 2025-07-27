@@ -5,6 +5,7 @@ using FFmpeg.Infrastructure.Commands;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,8 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-       
+
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
 
     }
 
@@ -39,6 +41,16 @@ namespace FFmpeg.Infrastructure.Services
             return new WatermarkCommand(_executor, _commandBuilder);
         }
 
-   
+
+        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+        {
+            return new ConvertAudioCommand(_executor, _commandBuilder);
+        }
+
+
     }
 }
+
+
+
+
