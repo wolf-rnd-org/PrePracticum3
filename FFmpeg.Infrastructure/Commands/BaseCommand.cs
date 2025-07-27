@@ -1,6 +1,7 @@
-﻿using FFmpeg.Infrastructure.Services;
+﻿using FFmpeg.Infrastructure.Commands;
+using FFmpeg.Infrastructure.Services;
 
-namespace FFmpeg.Infrastructure.Commands
+namespace FFmpeg.Command.Commands
 {
     public abstract class BaseCommand
     {

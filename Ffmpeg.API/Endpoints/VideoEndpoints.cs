@@ -22,7 +22,7 @@ namespace FFmpeg.API.Endpoints
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
             app.MapPost("/api/video/volume", SetVolume)
                  .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
 
         }
         private static async Task<IResult> SetVolume(
@@ -145,9 +145,6 @@ namespace FFmpeg.API.Endpoints
                 logger.LogError(ex, "Error in AddWatermark endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
-
-        }
-
-       
+        }     
     }
 }

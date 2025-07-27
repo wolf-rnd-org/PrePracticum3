@@ -1,6 +1,8 @@
 
 using Ffmpeg.Command.Commands;
+using FFmpeg.Command.Commands;
 using FFmpeg.Core.Models;
+using FFmpeg.Infrastructure.Commands;
 using FFmpeg.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFmpeg.Infrastructure.Commands
+namespace FFmpeg.Command.Commands
 {
     public class SetVolumeCommand : BaseCommand, ICommand<SetVolumeModel>
     {
@@ -31,5 +33,6 @@ namespace FFmpeg.Infrastructure.Commands
 
             return await RunAsync();
         }
+
     }
 }
