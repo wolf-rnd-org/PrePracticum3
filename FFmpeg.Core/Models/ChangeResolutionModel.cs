@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    internal class ChangeResolutionModel
+    public class ChangeResolutionModel
     {
+        public string InputFile { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public string OutputFile { get; set; }
+        public string VideoCodec { get; set; } = "libx264";
     }
 }
