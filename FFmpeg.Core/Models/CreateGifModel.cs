@@ -10,9 +10,8 @@ namespace FFmpeg.Core.Models
     {
         public string InputFile { get; set; }
         public string OutputFile { get; set; }
-        public int Fps { get; set; } = 10;
-        public int YPosition { get; set; }
-        public int Width { get; set; } = 320;
+        public int? Fps { get; set; } = 10;
+        public int? Width { get; set; } = 320;
 
     }
 }
