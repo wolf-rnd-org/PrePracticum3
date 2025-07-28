@@ -28,7 +28,9 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/timestamp", AddTimestamp)
                  .DisableAntiforgery()
                  .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
-
+            app.MapPost("/api/video/border", AddBorder)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -203,5 +205,59 @@ namespace FFmpeg.API.Endpoints
             }
         }
 
+        private static async Task<IResult> AddBorder(
+    HttpContext context,
+    [FromForm] BorderDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null || string.IsNullOrWhiteSpace(dto.FrameColor))
+                    return Results.BadRequest("Video file and frame color are required");
+
+                string inputFile = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string extension = Path.GetExtension(dto.VideoFile.FileName);
+                string outputFile = await fileService.GenerateUniqueFileNameAsync(extension);
+
+                var filesToCleanup = new List<string> { inputFile, outputFile };
+
+                try
+                {
+                    var command = ffmpegService.CreateBorderCommand();
+                    var result = await command.ExecuteAsync(new BorderModel
+                    {
+                        VideoName = inputFile,
+                        FrameColor = dto.FrameColor,
+                        VideoOutputName = outputFile
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to add border: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFile);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(fileBytes, "video/mp4", "bordered_" + dto.VideoFile.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error during border processing");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.Problem("Internal error: " + ex.Message, statusCode: 500);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in AddBorder endpoint");
+                return Results.Problem("Unexpected error: " + ex.Message, statusCode: 500);
+            }
+        }
     }
 }
