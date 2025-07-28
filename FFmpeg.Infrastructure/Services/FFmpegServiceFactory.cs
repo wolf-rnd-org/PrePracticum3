@@ -16,6 +16,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
+        ICommand<FadeEffectModel> CreateFadeEffectCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -42,6 +43,11 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
         }
+        public ICommand<FadeEffectModel> CreateFadeEffectCommand()
+        {
+            return new FadeEffectCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<TimestampModel> CreateTimestampCommand()
         {
             return new TimestampCommand(_executor, _commandBuilder); 
