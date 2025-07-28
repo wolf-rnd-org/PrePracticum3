@@ -2,6 +2,6 @@
 {
     public class ReverseVideoDto
     {
-        public IFormFile VideoFile { get; set; }
+        public IFormFile  { get; set; }
     }
 }
