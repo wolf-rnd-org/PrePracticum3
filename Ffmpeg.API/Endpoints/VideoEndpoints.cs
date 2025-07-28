@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FFmpeg.API.Endpoints
 {
-    public static class MediaEndpoints
+    public static class VideoEndpoints
     {
         public static void MapEndpoints(this WebApplication app)
         {
@@ -113,7 +113,6 @@ namespace FFmpeg.API.Endpoints
             }
 
             string outputFileName = dto.OutputFileName;
-
             List<string> filesToCleanup = new() { inputFileName, outputFileName };
 
             try

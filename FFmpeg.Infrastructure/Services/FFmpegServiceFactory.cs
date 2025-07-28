@@ -17,23 +17,18 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
     }
-
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
         private readonly FFmpegExecutor _executor;
         private readonly ICommandBuilder _commandBuilder;
-
         public FFmpegServiceFactory(IConfiguration configuration, ILogger logger = null)
         {
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string ffmpegPath = Path.Combine(baseDirectory, "external", "ffmpeg.exe");
-
             bool logOutput = bool.TryParse(configuration["FFmpeg:LogOutput"], out bool log) && log;
-
             _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
             _commandBuilder = new CommandBuilder(configuration);
         }
-
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
@@ -42,7 +37,6 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
-
     }
 }
 
