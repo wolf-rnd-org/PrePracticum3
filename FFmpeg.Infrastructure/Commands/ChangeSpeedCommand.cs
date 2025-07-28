@@ -26,13 +26,10 @@ namespace Ffmpeg.Command.Commands
         {
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
-                .SetOutput(model.OutputFile)
                 .AddOption($"-vf \"setpts={model.SpeedFactor}*PTS\"")
-                .SetVideoCodec(model.VideoCodec);
-            if (model.MaintainAudio)
-            {
-                CommandBuilder.AddOption($"-filter:a atempo={model.SpeedFactor}");
-            }
+                .SetVideoCodec(model.VideoCodec)
+                .SetOutput(model.OutputFile);
+
             return await RunAsync();
         }
     }
