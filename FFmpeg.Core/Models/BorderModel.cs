@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    class BorderModel
+    public class BorderModel
     {
+        public string VideoName { get; set; }
+        public string FrameColor { get; set; }
+        public string VideoOutputName { get; set; }
     }
 }
