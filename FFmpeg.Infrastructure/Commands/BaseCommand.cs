@@ -1,8 +1,8 @@
 ﻿using FFmpeg.Infrastructure.Commands;
 using FFmpeg.Infrastructure.Services;
 
-namespace FFmpeg.Command.Commands
-{
+namespace Ffmpeg.Command.Commands
+{ 
     public abstract class BaseCommand
     {
         private readonly FFmpegExecutor _executor;

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFmpeg.Command.Commands
+namespace Ffmpeg.Command.Commands
 {
     public interface ICommand<TModel>
     {

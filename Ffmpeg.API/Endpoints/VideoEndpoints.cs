@@ -16,7 +16,7 @@ namespace FFmpeg.API.Endpoints
     public static class VideoEndpoints
     {
         private const int MaxUploadSize = 104_857_600; // 100 MB
-
+  
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
@@ -25,7 +25,7 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/volume", SetVolume)
                  .DisableAntiforgery()
-                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
 
 
             app.MapPost("/api/video/reverse", ReverseVideo)
