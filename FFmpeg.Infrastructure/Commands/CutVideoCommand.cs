@@ -30,7 +30,5 @@ namespace FFmpeg.Infrastructure.Commands
 
             return await RunAsync();
         }
-
-
     }
 }
