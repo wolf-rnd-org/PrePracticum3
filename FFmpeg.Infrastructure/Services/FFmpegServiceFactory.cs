@@ -40,6 +40,3 @@ namespace FFmpeg.Infrastructure.Services
     }
 }
 
-
-
-
