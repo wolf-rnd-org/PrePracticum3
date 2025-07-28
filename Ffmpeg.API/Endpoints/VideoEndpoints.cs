@@ -17,15 +17,20 @@ namespace FFmpeg.API.Endpoints
     {
         private const int MaxUploadSize = 104_857_600; // 100 MB
 
-        public static void MapEndpoints(this WebApplication app)
-        {
-            app.MapPost("/api/video/watermark", AddWatermark)
-                .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
-            app.MapPost("/api/video/reverse", ReverseVideo)
-                .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
-        }
+            public static void MapEndpoints(this WebApplication app)
+            {
+                app.MapPost("/api/video/watermark", AddWatermark)
+                    .DisableAntiforgery()
+                    .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
+                app.MapPost("/api/video/reverse", ReverseVideo)
+                    .DisableAntiforgery()
+                    .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
+                app.MapPost("/api/video/merge", MergeVideos)
+                    .DisableAntiforgery()
+                    .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            }
 
         private static async Task<IResult> AddWatermark(
             HttpContext context,
@@ -149,6 +154,60 @@ namespace FFmpeg.API.Endpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in ReverseVideo endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+        private static async Task<IResult> MergeVideos(
+    HttpContext context,
+    [FromForm] MergeVideosDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile1 == null || dto.VideoFile2 == null)
+                    return Results.BadRequest("Both video files are required");
+
+                string file1 = await fileService.SaveUploadedFileAsync(dto.VideoFile1);
+                string file2 = await fileService.SaveUploadedFileAsync(dto.VideoFile2);
+                string extension = Path.GetExtension(dto.VideoFile1.FileName);
+                string output = await fileService.GenerateUniqueFileNameAsync(extension);
+
+                List<string> filesToCleanup = new() { file1, file2, output };
+
+                try
+                {
+                    var command = ffmpegService.CreateMergeVideosCommand();
+                    var result = await command.ExecuteAsync(new MergeVideosModel
+                    {
+                        InputFile1 = file1,
+                        InputFile2 = file2,
+                        OutputFile = output,
+                        Mode = dto.Mode?.ToLower() == "vertical" ? "vertical" : "horizontal"
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg merge failed: {Error}", result.ErrorMessage);
+                        return Results.Problem("Merge failed: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(output);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.File(fileBytes, "video/mp4", "merged_" + dto.VideoFile1.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error merging videos");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in MergeVideos endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
