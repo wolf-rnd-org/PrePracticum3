@@ -25,12 +25,15 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/reverse", ReverseVideo)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
             app.MapPost("/api/video/change-resolution", ChangeResolution)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
             app.MapPost("/api/video/timestamp", AddTimestamp)
                  .DisableAntiforgery()
                  .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
 
         }
 
