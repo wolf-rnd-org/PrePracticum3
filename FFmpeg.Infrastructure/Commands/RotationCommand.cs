@@ -31,9 +31,7 @@ namespace FFmpeg.Infrastructure.Commands
             CommandBuilder
                 .AddOption("-map 0:a?")
                 .AddOption("-c:a copy");
-
             CommandBuilder.SetOutput(model.OutputFile);
-
             return await RunAsync();
         }
     }

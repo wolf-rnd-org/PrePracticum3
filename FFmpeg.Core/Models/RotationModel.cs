@@ -10,7 +10,6 @@ namespace FFmpeg.Core.Models
     {
         public string InputFile { get; set; }
         public string OutputFile { get; set; }
-        public double Angle { get; set; }
-        
+        public double Angle { get; set; }  
     }
 }
