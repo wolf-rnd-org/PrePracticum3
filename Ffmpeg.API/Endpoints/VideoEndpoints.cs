@@ -15,6 +15,8 @@ namespace FFmpeg.API.Endpoints
 {
     public static class VideoEndpoints
     {
+        private const int MaxUploadSize = 104_857_600; // 100 MB
+
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
@@ -23,7 +25,13 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/rotation", RotateVideo)
                .DisableAntiforgery()
-               .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+               .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
+            app.MapPost("/api/video/reverse", ReverseVideo)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            app.MapPost("/api/video/timestamp", AddTimestamp)
+                 .DisableAntiforgery()
+                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -99,8 +107,9 @@ namespace FFmpeg.API.Endpoints
             }
 
         }
+<<<<<<< HEAD
 
-        private static async Task<IResult> RotateVideo(
+        private static async Task<IResult> RotateVideo(/////////////////////
     HttpContext context,
     [FromForm] RotationDto dto)
         {
@@ -152,5 +161,110 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
+
+        private static async Task<IResult> ReverseVideo(
+              HttpContext context,
+             [FromForm] ReverseVideoDto dto)
+
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null)
+                {
+                    return Results.BadRequest("Video file is required");
+                }
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string extension = Path.GetExtension(dto.VideoFile.FileName);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+                List<string> filesToCleanup = new List<string> { videoFileName, outputFileName };
+
+                try
+                {
+                    var command = ffmpegService.CreateReverseVideoCommand();
+                    var result = await command.ExecuteAsync(new ReverseVideoModel
+                    {
+                        InputFile = videoFileName,
+                        OutputFile = outputFileName
+
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {CommandExecuted}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to reverse video: " + result.ErrorMessage, statusCode: 500);
+                    }
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing reverse video request");
+
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                logger.LogError(ex, "Error in ReverseVideo endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+        private static async Task<IResult> AddTimestamp(
+    HttpContext context,
+    [FromForm] TimestampDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null)
+                    return Results.BadRequest("Video file is required");
+
+                // שמירת הקלט
+                string inputFile = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string extension = Path.GetExtension(dto.VideoFile.FileName);
+                string outputFile = await fileService.GenerateUniqueFileNameAsync(extension);
+
+                List<string> filesToCleanup = new List<string> { inputFile, outputFile };
+
+                // הפעלת הפקודה
+                var command = ffmpegService.CreateTimestampCommand();
+                var result = await command.ExecuteAsync(new TimestampModel
+                {
+                    InputFile = inputFile,
+                    OutputFile = outputFile
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg timestamp failed: {ErrorMessage}, Command: {Command}",
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to add timestamp: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFile);
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in AddTimestamp endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
+>>>>>>> master
     }
 }

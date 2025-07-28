@@ -15,6 +15,9 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<RotationModel> CreateRotationCommand();
+        ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+        ICommand<TimestampModel> CreateTimestampCommand();
+
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -41,6 +44,17 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<RotationModel> CreateRotationCommand()
         {
             return new RotationCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
+        {
+            return new ReverseVideoCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<TimestampModel> CreateTimestampCommand()
+        {
+            return new TimestampCommand(_executor, _commandBuilder);
+
         }
     }
 }
