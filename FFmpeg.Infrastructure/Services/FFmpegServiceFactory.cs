@@ -1,4 +1,4 @@
-﻿using Ffmpeg.Command;
+using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
@@ -15,7 +15,11 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<AudioMixModel> CreateAudioMixCommand();
+        ICommand<CutVideoModel> CreateCutVideoCommand();
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+        ICommand<TimestampModel> CreateTimestampCommand();
+        ICommand<CreateGifModel> CreateGifCommand();
+        ICommand<SetVolumeModel> CreateSetVolumeCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -38,13 +42,35 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+
         public ICommand<AudioMixModel> CreateAudioMixCommand()
         {
             return new AudioMixCommand(_executor, _commandBuilder);
         }
+
+        public ICommand<CutVideoModel> CreateCutVideoCommand()
+        {
+            return new CutVideoCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<TimestampModel> CreateTimestampCommand()
+        {
+            return new TimestampCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<CreateGifModel> CreateGifCommand()
+        {
+            return new CreateGifCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<SetVolumeModel> CreateSetVolumeCommand()
+        {
+            return new SetVolumeCommand(_executor, _commandBuilder);
         }
     }
 }
