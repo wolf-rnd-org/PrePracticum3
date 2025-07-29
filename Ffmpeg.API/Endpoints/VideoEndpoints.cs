@@ -17,13 +17,11 @@ namespace FFmpeg.API.Endpoints
     {
         private const int MaxUploadSize = 104_857_600; // 100 MB
         private const int MaxUloadSizeFofGif = 52428800;
-
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
-
             app.MapPost("/api/video/convert", ConvertAudio)
                 .DisableAntiforgery()
                 .WithName("ConvertAudio")
@@ -38,7 +36,6 @@ namespace FFmpeg.API.Endpoints
                .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUloadSizeFofGif)); // 50MB
         }
-
         private static async Task<IResult> AddWatermark(
             HttpContext context,
             [FromForm] WatermarkDto dto)
@@ -56,7 +53,6 @@ namespace FFmpeg.API.Endpoints
 
                 string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
                 string watermarkFileName = await fileService.SaveUploadedFileAsync(dto.WatermarkFile);
-
                 string extension = Path.GetExtension(dto.VideoFile.FileName);
                 string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
 
@@ -86,7 +82,6 @@ namespace FFmpeg.API.Endpoints
                     byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
 
                     _ = fileService.CleanupTempFilesAsync(filesToCleanup);
-
                     return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
                 }
                 catch (Exception ex)
@@ -221,7 +216,6 @@ namespace FFmpeg.API.Endpoints
             }
 
             var inputFileName = await fileService.SaveUploadedFileAsync(dto.AudioFile);
-
             string extension = Path.GetExtension(dto.OutputFileName);
             if (string.IsNullOrEmpty(extension))
             {
@@ -257,7 +251,6 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("Unexpected error: " + ex.Message);
             }
         }
-
 
         private static async Task<IResult> AddTimestamp(
    HttpContext context,
@@ -305,6 +298,5 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-
     }
 }
