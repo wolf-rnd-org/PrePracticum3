@@ -60,10 +60,6 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<CreateGifModel> CreateGifCommand()
         {
             return new CreateGifCommand(_executor, _commandBuilder);
-        }
-    }
-            return new TimestampCommand(_executor, _commandBuilder); 
-
     }
 }
 }
