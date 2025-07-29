@@ -19,6 +19,8 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
 
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+      
+        ICommand<TimestampModel> CreateTimestampCommand();
 
     }
 
@@ -55,5 +57,10 @@ namespace FFmpeg.Infrastructure.Services
             return new ReverseVideoCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<TimestampModel> CreateTimestampCommand()
+        {
+            return new TimestampCommand(_executor, _commandBuilder); 
+
     }
+}
 }
