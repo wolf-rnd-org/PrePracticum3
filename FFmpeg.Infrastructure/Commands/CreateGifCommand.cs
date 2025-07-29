@@ -23,8 +23,6 @@ namespace FFmpeg.Infrastructure.Commands
         {
             int fps = model.Fps.HasValue && model.Fps > 0 ? model.Fps.Value : 10;
             int width = model.Width.HasValue && model.Width > 0 ? model.Width.Value : 320;
-
-            Console.WriteLine($"command:💓-vf fps={fps},scale={width}:-1");
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
                 .AddOption($"-vf fps={fps},scale={width}:-1")
