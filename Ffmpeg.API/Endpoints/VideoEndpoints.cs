@@ -23,7 +23,7 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
 
-            app.MapPost("/api/audio/convert", ConvertAudio)
+            app.MapPost("/api/video/convert", ConvertAudio)
                 .DisableAntiforgery()
                 .WithName("ConvertAudio")
                 .Accepts<ConvertAudioDto>("multipart/form-data");
