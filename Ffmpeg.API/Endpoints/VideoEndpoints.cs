@@ -16,14 +16,15 @@ namespace FFmpeg.API.Endpoints
     public static class VideoEndpoints
     {
         private const int MaxUploadSize = 104_857_600; // 100 MB
-        private const int MaxUloadSizeFofGif = 52428800;
+        private const int MaxUploadSizeForGif = 52_428_800; // 50 MB
 
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
-            app.MapPost("/api/video/reverse", ReverseVideo)
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
+            app.MapPost("/api/video/cut", CutVideo)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
