@@ -12,6 +12,5 @@ namespace FFmpeg.Core.Models
         public string OutputFile { get; set; }
         public int? Fps { get; set; } = 10;
         public int? Width { get; set; } = 320;
-
     }
 }
