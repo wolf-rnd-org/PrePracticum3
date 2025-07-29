@@ -16,6 +16,7 @@ namespace FFmpeg.API.Endpoints
     public static class VideoEndpoints
     {
         private const int MaxUploadSize = 104_857_600; // 100 MB
+        private const int MaxUloadSizeFofGif = 52428800;
 
         public static void MapEndpoints(this WebApplication app)
         {
@@ -28,10 +29,13 @@ namespace FFmpeg.API.Endpoints
                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
             app.MapPost("/api/video/reverse", ReverseVideo)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));          
             app.MapPost("/api/video/timestamp", AddTimestamp)
                  .DisableAntiforgery()
                  .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+            app.MapPost("/api/video/createGif", AddCreateGif)
+             .DisableAntiforgery()
+              .WithMetadata(new RequestSizeLimitAttribute(MaxUloadSizeFofGif)); // 50MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -107,9 +111,9 @@ namespace FFmpeg.API.Endpoints
             }
 
         }
-<<<<<<< HEAD
 
-        private static async Task<IResult> RotateVideo(/////////////////////
+
+        private static async Task<IResult> RotateVideo(
     HttpContext context,
     [FromForm] RotationDto dto)
         {
@@ -218,6 +222,57 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
+        private static async Task<IResult> AddCreateGif(
+      HttpContext context,
+      [FromForm] CreateGifDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+            try
+            {
+                if (dto.InputFile == null)
+                {
+                    return Results.BadRequest("Video file is required to create a GIF.");
+                }
+                // Save uploaded video file
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.InputFile);
+                // Output file should end with .gif
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(".gif");
+                List<string> filesToCleanup = new() { videoFileName, outputFileName };
+                try
+                {
+                    var command = ffmpegService.CreateGifCommand();
+                    var result = await command.ExecuteAsync(new CreateGifModel
+                    {
+                        InputFile = videoFileName,
+                        OutputFile = outputFileName,
+                        Fps = dto.Fps,
+                        Width = dto.Width
+                    });
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to create GIF: " + result.ErrorMessage, statusCode: 500);
+                    }
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.File(fileBytes, "image/gif", Path.GetFileName(outputFileName));
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error creating GIF");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in AddCreateGif endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
         private static async Task<IResult> AddTimestamp(
     HttpContext context,
     [FromForm] TimestampDto dto)
@@ -265,6 +320,6 @@ namespace FFmpeg.API.Endpoints
             }
         }
 
->>>>>>> master
+
     }
 }

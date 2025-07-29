@@ -17,6 +17,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<RotationModel> CreateRotationCommand();
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
+        ICommand<CreateGifModel> CreateGifCommand();
 
     }
 
@@ -55,6 +56,10 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new TimestampCommand(_executor, _commandBuilder);
 
+        }
+        public ICommand<CreateGifModel> CreateGifCommand()
+        {
+            return new CreateGifCommand(_executor, _commandBuilder);
         }
     }
 }
