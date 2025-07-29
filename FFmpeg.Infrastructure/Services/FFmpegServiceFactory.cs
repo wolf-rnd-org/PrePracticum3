@@ -15,7 +15,8 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
-        ICommand<TimestampModel> CreateTimestampCommand();
+        ICommand<RemoveAudioModel> CreateRemoveAudioCommand();   // שלך
+        ICommand<TimestampModel> CreateTimestampCommand();       // מהמאסטר
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -38,13 +39,22 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
         }
+
+        public ICommand<RemoveAudioModel> CreateRemoveAudioCommand()
+        {
+            return new RemoveAudioCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<TimestampModel> CreateTimestampCommand()
         {
-            return new TimestampCommand(_executor, _commandBuilder); 
+            return new TimestampCommand(_executor, _commandBuilder);
+        }
     }
+
 }
-}
+

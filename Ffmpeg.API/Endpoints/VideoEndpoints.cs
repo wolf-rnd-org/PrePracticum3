@@ -16,12 +16,16 @@ namespace FFmpeg.API.Endpoints
     public static class VideoEndpoints
     {
         private const int MaxUploadSize = 104_857_600; // 100 MB
+        const int maxVideo = 104857600;
 
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+                .WithMetadata(new RequestSizeLimitAttribute(maxVideo)); // 100 MB
+            app.MapPost("/api/video/remove-audio", RemoveAudio)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(maxVideo));
             app.MapPost("/api/video/reverse", ReverseVideo)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
@@ -156,9 +160,56 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
+        // בתוך המחלקה VideoEndpoints:
+
+        private static async Task<IResult> RemoveAudio(
+            HttpContext context,
+            [FromForm] AudioRemovalDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            if (dto.VideoFile == null)
+                return Results.BadRequest("Video file is required");
+
+            try
+            {
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string extension = Path.GetExtension(dto.VideoFile.FileName);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+
+                List<string> filesToCleanup = new List<string> { videoFileName, outputFileName };
+
+                var command = ffmpegService.CreateRemoveAudioCommand();
+                var result = await command.ExecuteAsync(new RemoveAudioModel
+                {
+                    InputFile = videoFileName,
+                    OutputFile = outputFileName
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to remove audio: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error processing remove audio request");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
         private static async Task<IResult> AddTimestamp(
-    HttpContext context,
-    [FromForm] TimestampDto dto)
+            HttpContext context,
+            [FromForm] TimestampDto dto)
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
@@ -169,14 +220,12 @@ namespace FFmpeg.API.Endpoints
                 if (dto.VideoFile == null)
                     return Results.BadRequest("Video file is required");
 
-                // שמירת הקלט
                 string inputFile = await fileService.SaveUploadedFileAsync(dto.VideoFile);
                 string extension = Path.GetExtension(dto.VideoFile.FileName);
                 string outputFile = await fileService.GenerateUniqueFileNameAsync(extension);
 
                 List<string> filesToCleanup = new List<string> { inputFile, outputFile };
 
-                // הפעלת הפקודה
                 var command = ffmpegService.CreateTimestampCommand();
                 var result = await command.ExecuteAsync(new TimestampModel
                 {
