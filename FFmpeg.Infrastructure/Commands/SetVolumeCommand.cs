@@ -13,17 +13,13 @@ using System.Threading.Tasks;
 namespace FFmpeg.Command.Commands
 {
 
+
+
     public class SetVolumeCommand : BaseCommand, ICommand<SetVolumeModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
         public SetVolumeCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
-
-    public class VolumeCommand : BaseCommand, ICommand<SetVolumeModel>
-    {
-        private readonly ICommandBuilder _commandBuilder;
-
-        public VolumeCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
 
             : base(executor)
         {
@@ -43,15 +39,6 @@ namespace FFmpeg.Command.Commands
             return await RunAsync();
         }
 
-
-
-            CommandBuilder = _commandBuilder
-                .SetInput(model.InputFile)
-                .AddFilterComplex($"volume={model.Volume}")
-                .SetOutput(model.OutputFile);
-
-            return await RunAsync();
-        }
 
     }
 }

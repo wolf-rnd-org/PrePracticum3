@@ -32,6 +32,9 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
+            app.MapPost("/api/video/timestamp", AddTimestamp)
+                 .DisableAntiforgery()
+                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
 
         }
         private static async Task<IResult> SetVolume(
@@ -80,9 +83,7 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
 
-            app.MapPost("/api/video/timestamp", AddTimestamp)
-                 .DisableAntiforgery()
-                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+            
 
 
         }
@@ -163,8 +164,6 @@ namespace FFmpeg.API.Endpoints
 
         }     
 
-
-        }
         private static async Task<IResult> ReverseVideo(
               HttpContext context,
              [FromForm] ReverseVideoDto dto)
