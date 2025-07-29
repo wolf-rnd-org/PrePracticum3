@@ -10,7 +10,7 @@ using System.Text;
 
 using System.Threading.Tasks;
 
-namespace FFmpeg.Command.Commands
+namespace FFmpeg.Infrastructure.Commands
 {
 
 
