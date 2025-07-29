@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -47,6 +47,12 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/createGif", AddCreateGif)
                .DisableAntiforgery()
                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSizeForGif));
+
+            app.MapPost("/api/video/convert", ConvertAudio)
+                .DisableAntiforgery()
+                .WithName("ConvertAudio")
+                .Accepts<ConvertAudioDto>("multipart/form-data")
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
 
         private static async Task<IResult> AddWatermark(HttpContext context, [FromForm] WatermarkDto dto)
@@ -426,6 +432,50 @@ namespace FFmpeg.API.Endpoints
             {
                 logger.LogError(ex, "Error in AddTimestamp endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
+        private static async Task<IResult> ConvertAudio(HttpContext context, [FromForm] ConvertAudioDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            if (dto.AudioFile == null || string.IsNullOrEmpty(dto.OutputFileName))
+                return Results.BadRequest("Audio file and output name are required");
+
+            string inputFileName = await fileService.SaveUploadedFileAsync(dto.AudioFile);
+            string extension = Path.GetExtension(dto.OutputFileName);
+            if (string.IsNullOrEmpty(extension))
+                return Results.BadRequest("Output file name must include extension (e.g., .wav)");
+
+            string outputFileName = dto.OutputFileName;
+            List<string> filesToCleanup = new() { inputFileName, outputFileName };
+
+            try
+            {
+                var command = ffmpegService.CreateConvertAudioCommand();
+                var result = await command.ExecuteAsync(new ConvertAudioModel
+                {
+                    InputFile = inputFileName,
+                    OutputFile = outputFileName
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("Audio conversion failed: {Error}", result.ErrorMessage);
+                    return Results.Problem("Audio conversion failed: " + result.ErrorMessage);
+                }
+
+                byte[] output = await fileService.GetOutputFileAsync(outputFileName);
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                return Results.File(output, "audio/wav", outputFileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error converting audio");
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                return Results.Problem("Unexpected error: " + ex.Message);
             }
         }
     }
