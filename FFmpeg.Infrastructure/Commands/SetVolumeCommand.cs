@@ -1,17 +1,26 @@
+
 using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using FFmpeg.Infrastructure.Services;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
 using System.Threading.Tasks;
 
 namespace FFmpeg.Command.Commands
 {
-    public class VolumeCommand : BaseCommand, ICommand<SetVolumeModel>
+
+
+
+    public class SetVolumeCommand : BaseCommand, ICommand<SetVolumeModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public VolumeCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public SetVolumeCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
@@ -23,11 +32,13 @@ namespace FFmpeg.Command.Commands
             if (model.Volume <= 0) throw new ArgumentException("Volume must be greater than 0");
 
             CommandBuilder = _commandBuilder
-                .SetInput(model.InputFile)
-                .AddFilterComplex($"volume={model.Volume}")
-                .SetOutput(model.OutputFile);
+                    .SetInput(model.InputFile)
+                    .AddOption($"-af volume={model.Volume}")
+                    .SetOutput(model.OutputFile);
 
             return await RunAsync();
         }
+
+
     }
 }
