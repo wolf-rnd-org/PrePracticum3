@@ -1,4 +1,5 @@
-﻿using Ffmpeg.Command;
+
+using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
@@ -19,6 +20,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
         ICommand<CreateGifModel> CreateGifCommand();
+        ICommand<SetVolumeModel> CreateSetVolumeCommand();
     }
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
@@ -52,6 +54,10 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<CreateGifModel> CreateGifCommand()
         {
             return new CreateGifCommand(_executor, _commandBuilder);
+        }
+          public ICommand<SetVolumeModel> CreateSetVolumeCommand()
+        {
+            return new SetVolumeCommand(_executor, _commandBuilder);
         }
     }
 }

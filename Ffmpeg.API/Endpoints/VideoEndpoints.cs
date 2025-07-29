@@ -16,6 +16,7 @@ namespace FFmpeg.API.Endpoints
     public static class VideoEndpoints
     {
         private const int MaxUploadSize = 104_857_600; // 100 MB
+
         private const int MaxUloadSizeFofGif = 52428800;
         public static void MapEndpoints(this WebApplication app)
         {
@@ -26,6 +27,12 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithName("ConvertAudio")
                 .Accepts<ConvertAudioDto>("multipart/form-data");
+
+            app.MapPost("/api/video/volume", SetVolume)
+                 .DisableAntiforgery()
+                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
+
+
             app.MapPost("/api/video/reverse", ReverseVideo)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));          
@@ -36,6 +43,59 @@ namespace FFmpeg.API.Endpoints
                .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUloadSizeFofGif)); // 50MB
         }
+        private static async Task<IResult> SetVolume(
+            HttpContext context,
+            [FromForm] SetVolumeDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            if (dto.VideoFile == null || dto.Volume <= 0)
+            {
+                return Results.BadRequest("Valid video file and volume level are required.");
+            }
+
+            string inputFile = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+            string extension = Path.GetExtension(dto.VideoFile.FileName);
+            string outputFile = await fileService.GenerateUniqueFileNameAsync(extension);
+            var filesToCleanup = new List<string> { inputFile, outputFile };
+
+            try
+            {
+                var command = ffmpegService.CreateSetVolumeCommand();
+                var result = await command.ExecuteAsync(new SetVolumeModel
+                {
+                    InputFile = inputFile,
+                    OutputFile = outputFile,
+                    Volume = dto.Volume
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg volume command failed: {ErrorMessage}, Command: {Command}",
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to adjust volume: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                byte[] outputBytes = await fileService.GetOutputFileAsync(outputFile);
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                return Results.File(outputBytes, "video/mp4", dto.VideoFile.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error processing SetVolume");
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+
+            
+
+
+        }
+
+
+
         private static async Task<IResult> AddWatermark(
             HttpContext context,
             [FromForm] WatermarkDto dto)
@@ -97,7 +157,8 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
 
-        }
+        }     
+
         private static async Task<IResult> ReverseVideo(
               HttpContext context,
              [FromForm] ReverseVideoDto dto)
@@ -251,6 +312,8 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("Unexpected error: " + ex.Message);
             }
         }
+
+        
 
         private static async Task<IResult> AddTimestamp(
    HttpContext context,
