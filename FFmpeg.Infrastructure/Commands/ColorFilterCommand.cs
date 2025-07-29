@@ -9,21 +9,28 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Commands
 {
-    public class ReverseVideoCommand:BaseCommand,ICommand<ReverseVideoModel>
+    public class ColorFilterCommand : BaseCommand, ICommand<ColorFilterModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public ReverseVideoCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public ColorFilterCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
-        public async Task<CommandResult> ExecuteAsync(ReverseVideoModel model)
+
+        public async Task<CommandResult> ExecuteAsync(ColorFilterModel model)
         {
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
-                .AddOption($"-vf reverse")
-                .SetOutput(model.OutputFile);        
+                .AddOption("-vf \"hue=s=0\"");
+
+            if (model.IsVideo)
+            {
+                CommandBuilder.SetVideoCodec(model.VideoCodec);
+            }
+
+            CommandBuilder.SetOutput(model.OutputFile, !model.IsVideo);
 
             return await RunAsync();
         }
