@@ -31,7 +31,6 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));          
             app.MapPost("/api/video/timestamp", AddTimestamp)
                  .DisableAntiforgery()
                  .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
