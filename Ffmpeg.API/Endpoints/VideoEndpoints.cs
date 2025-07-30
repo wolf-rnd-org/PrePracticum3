@@ -51,9 +51,9 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSizeForGif));
 
-                 app.MapPost("/api/video/rotation", RotateVideo)
-               .DisableAntiforgery()
-               .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); 
+            app.MapPost("/api/video/rotation", RotateVideo)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
 
         private static async Task<IResult> SetVolume(HttpContext context, [FromForm] SetVolumeDto dto)
@@ -357,9 +357,7 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-            private static async Task<IResult> RotateVideo(
-    HttpContext context,
-    [FromForm] RotationDto dto)
+        private static async Task<IResult> RotateVideo(HttpContext context, [FromForm] RotationDto dto)
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();

@@ -22,7 +22,6 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<TimestampModel> CreateTimestampCommand();
         ICommand<CreateGifModel> CreateGifCommand();
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
- 
     }
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
