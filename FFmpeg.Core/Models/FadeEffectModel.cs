@@ -8,8 +8,8 @@ namespace FFmpeg.Core.Models
 {
     public class FadeEffectModel
     {
-        public string InputFilePath { get; set; }
-        public int FadeInDurationSeconds { get; set; }
-        public string OutputFilePath { get; set; }
+        public string InputPath { get; set; }
+        public string OutputPath { get; set; }
+        public double Duration { get; set; }
     }
 }
