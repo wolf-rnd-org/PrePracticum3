@@ -3,11 +3,7 @@ using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using Microsoft.Extensions.Configuration;
-<<<<<<< HEAD
-=======
 
-
->>>>>>> feature/video-compression-api
 namespace FFmpeg.Infrastructure.Services
 {
     public interface IFFmpegServiceFactory
@@ -55,4 +51,3 @@ namespace FFmpeg.Infrastructure.Services
         }
     }
 }
-
