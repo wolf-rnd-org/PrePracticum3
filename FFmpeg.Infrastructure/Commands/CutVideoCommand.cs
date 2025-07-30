@@ -9,21 +9,24 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Commands
 {
-    public class ReverseVideoCommand:BaseCommand,ICommand<ReverseVideoModel>
+    public class CutVideoCommand : BaseCommand, ICommand<CutVideoModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public ReverseVideoCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public CutVideoCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
-        public async Task<CommandResult> ExecuteAsync(ReverseVideoModel model)
+
+        public async Task<CommandResult> ExecuteAsync(CutVideoModel model)
         {
             CommandBuilder = _commandBuilder
-                .SetInput(model.InputFile)
-                .AddOption($"-vf reverse")
-                .SetOutput(model.OutputFile);        
+               .SetInput(model.InputFile)
+               .AddOption($"-ss {model.StartTime}")   
+               .AddOption($"-to {model.EndTime}")    
+               .AddOption("-c copy")                   
+               .SetOutput(model.OutputFile);
 
             return await RunAsync();
         }
