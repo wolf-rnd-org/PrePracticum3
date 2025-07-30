@@ -57,13 +57,13 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/rotation", RotateVideo)
                .DisableAntiforgery()
-               .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); 
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+               .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize))
+               .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
 
             app.MapPost("/api/video/changespeed", ChangeSpeed)
                .DisableAntiforgery()
-               .WithMetadata(new RequestSizeLimitAttribute(104857600));
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+               .WithMetadata(new RequestSizeLimitAttribute(104857600))
+               .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
         }
 
         private static async Task<IResult> ReplaceGreenScreen(HttpContext context,[FromForm] ReplaceGreenScreenDto dto)
@@ -477,9 +477,7 @@ namespace FFmpeg.API.Endpoints
             }
         }
 
-        private static async Task<IResult> ChangeSpeed(
-           HttpContext context,
-           [FromForm] ChangeSpeedDto dto)
+        private static async Task<IResult> ChangeSpeed(HttpContext context,[FromForm] ChangeSpeedDto dto)
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();

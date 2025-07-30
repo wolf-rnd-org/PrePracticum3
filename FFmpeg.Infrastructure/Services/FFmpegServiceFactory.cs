@@ -15,6 +15,7 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
         ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
@@ -24,6 +25,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<RotationModel> CreateRotationCommand();
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
         ICommand<ChangeSpeedModel> ChangeSpeedCommand();
+ 
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -44,6 +46,7 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
@@ -85,6 +88,7 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<ChangeSpeedModel> ChangeSpeedCommand()
         {
             return new ChangeSpeedCommand(_executor, _commandBuilder);
+
         }
     }
 }
