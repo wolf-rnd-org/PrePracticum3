@@ -15,8 +15,8 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+        ICommand<AddTextModel> CreateAddTextCommand();
         ICommand<ExtractFrameModel> CreateExtractFrameCommand();
         ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
@@ -42,6 +42,8 @@ namespace FFmpeg.Infrastructure.Services
             bool logOutput = bool.TryParse(configuration["FFmpeg:LogOutput"], out bool log) && log;
             _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
             _commandBuilder = new CommandBuilder(configuration);
+            if (_commandBuilder == null)
+                throw new Exception("CommandBuilder was null after construction!");
         }
 
         public ICommand<WatermarkModel> CreateWatermarkCommand()
@@ -52,6 +54,10 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
+        }
+        public ICommand<AddTextModel> CreateAddTextCommand()
+        {
+            return new AddTextCommand(_executor, _commandBuilder);
         }
         public ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand()
         {
