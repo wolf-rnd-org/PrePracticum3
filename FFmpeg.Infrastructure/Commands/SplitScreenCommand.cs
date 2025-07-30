@@ -22,9 +22,9 @@ public class SplitScreenCommand : BaseCommand, ICommand<SplitScreenModel>
 
         CommandBuilder = _commandBuilder
             .SetInput(model.InputFile)
-            .AddFilterComplex(filter) // הפילטר כולל את [out]
+            .AddFilterComplex(filter) 
             .SetVideoCodec(model.VideoCodec)
-            .SetOutput(model.OutputFile); // FFmpeg יזהה [out] כברירת מחדל
+            .SetOutput(model.OutputFile);
 
         return await RunAsync();
     }
@@ -43,6 +43,6 @@ public class SplitScreenCommand : BaseCommand, ICommand<SplitScreenModel>
             lastLabel = tmpLabel;
         }
 
-        return split + hstackChain.TrimEnd(';'); // נגמר עם [out]
+        return split + hstackChain.TrimEnd(';'); 
     }
 }
