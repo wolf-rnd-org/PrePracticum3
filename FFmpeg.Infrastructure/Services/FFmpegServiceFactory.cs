@@ -5,6 +5,7 @@ using FFmpeg.Infrastructure.Commands;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,12 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<TimestampModel> CreateTimestampCommand();
         ICommand<CreateGifModel> CreateGifCommand();
         ICommand<ColorFilterModel> CreateColorFilterCommand();
+        ICommand<ExtractFrameModel> CreateExtractFrameCommand();
+        ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+        ICommand<CutVideoModel> CreateCutVideoCommand();
+        ICommand<RotationModel> CreateRotationCommand();
+        ICommand<SetVolumeModel> CreateSetVolumeCommand();
 
     }
 
@@ -45,10 +52,41 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
         }
+        public ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand()
+        {
+            return new ReplaceGreenScreenCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+        {
+            return new ConvertAudioCommand(_executor, _commandBuilder);
+        }
+        public ICommand<CutVideoModel> CreateCutVideoCommand()
+        {
+            return new CutVideoCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<RotationModel> CreateRotationCommand()
+        {
+            return new RotationCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ExtractFrameModel> CreateExtractFrameCommand()
+        {
+            return new ExtractFrameCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<TimestampModel> CreateTimestampCommand()
         {
             return new TimestampCommand(_executor, _commandBuilder);
         }
+
+        public ICommand<SetVolumeModel> CreateSetVolumeCommand()
+        {
+            return new SetVolumeCommand(_executor, _commandBuilder);
+
+        }
+
         public ICommand<CreateGifModel> CreateGifCommand()
         {
             return new CreateGifCommand(_executor, _commandBuilder);
