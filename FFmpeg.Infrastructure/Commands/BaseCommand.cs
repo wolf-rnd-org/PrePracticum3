@@ -2,7 +2,7 @@
 using FFmpeg.Infrastructure.Services;
 
 namespace Ffmpeg.Command.Commands
-{
+{ 
     public abstract class BaseCommand
     {
         private readonly FFmpegExecutor _executor;
