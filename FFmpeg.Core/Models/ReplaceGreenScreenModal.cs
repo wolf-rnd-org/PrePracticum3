@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    public class ReplaceGreenScreen
+    public class ReplaceGreenScreenModal
     {
         public string InputVideoName { get; set; }
         public string BackgroundVideoName { get; set; }
