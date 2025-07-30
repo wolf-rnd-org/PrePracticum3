@@ -23,6 +23,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<CutVideoModel> CreateCutVideoCommand();
         ICommand<RotationModel> CreateRotationCommand();
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
+        ICommand<ChangeSpeedModel> ChangeSpeedCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -79,6 +80,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<CreateGifModel> CreateGifCommand()
         {
             return new CreateGifCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ChangeSpeedModel> ChangeSpeedCommand()
+        {
+            return new ChangeSpeedCommand(_executor, _commandBuilder);
         }
     }
 }
