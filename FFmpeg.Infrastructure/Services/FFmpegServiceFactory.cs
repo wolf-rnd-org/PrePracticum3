@@ -16,6 +16,9 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+
+        ICommand<ChangeResolutionModel> CreateChangeResolutionCommand();
+
         ICommand<AddTextModel> CreateAddTextCommand();
         ICommand<ExtractFrameModel> CreateExtractFrameCommand();
         ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
@@ -39,7 +42,9 @@ namespace FFmpeg.Infrastructure.Services
         {
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string ffmpegPath = Path.Combine(baseDirectory, "external", "ffmpeg.exe");
+
             bool logOutput = bool.TryParse(configuration["FFmpeg:LogOutput"], out bool log) && log;
+
             _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
             _commandBuilder = new CommandBuilder(configuration);
             if (_commandBuilder == null)
@@ -81,6 +86,12 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<ExtractFrameModel> CreateExtractFrameCommand()
         {
             return new ExtractFrameCommand(_executor, _commandBuilder);
+        }
+
+
+        public ICommand<ChangeResolutionModel> CreateChangeResolutionCommand()
+        {
+            return new ChangeResolutionCommand(_executor,_commandBuilder);
         }
 
         public ICommand<TimestampModel> CreateTimestampCommand()
