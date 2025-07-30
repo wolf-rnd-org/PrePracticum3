@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Commands
 {
-    public class ReplaceGreenScreenCommand : BaseCommand, ICommand<ReplaceGreenScreen>
+    public class ReplaceGreenScreenCommand : BaseCommand, ICommand<ReplaceGreenScreenModal>
     {
         private readonly ICommandBuilder _commandBuilder;
 
@@ -19,7 +19,7 @@ namespace FFmpeg.Infrastructure.Commands
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
-        public async Task<CommandResult> ExecuteAsync(ReplaceGreenScreen request)
+        public async Task<CommandResult> ExecuteAsync(ReplaceGreenScreenModal request)
         {
             _commandBuilder
                 .SetInput(request.InputVideoName)
