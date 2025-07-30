@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using FFmpeg.API.DTOs;
 using FFmpeg.Core.Interfaces;
@@ -22,7 +24,6 @@ namespace FFmpeg.API.Endpoints
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
-                .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
             app.MapPost("/api/video/cut", CutVideo)
                .DisableAntiforgery()
@@ -52,7 +53,13 @@ namespace FFmpeg.API.Endpoints
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
             app.MapPost("/api/video/rotation", RotateVideo)
                .DisableAntiforgery()
-               .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+               .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));// 100 MB
+
+            app.MapPost("/api/video/changespeed", ChangeSpeed)
+               .DisableAntiforgery()
+               .WithMetadata(new RequestSizeLimitAttribute(104857600))
+               .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
         }
         private static async Task<IResult> ReplaceGreenScreen(HttpContext context, [FromForm] ReplaceGreenScreenDto dto)
         {
@@ -514,6 +521,56 @@ namespace FFmpeg.API.Endpoints
                 logger.LogError(ex, "Error in RotateVideo endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
+        }
+
+        private static async Task<IResult> ChangeSpeed(HttpContext context,[FromForm] ChangeSpeedDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+            try
+            {
+                if (dto.VideoFile == null)
+                {
+                    return Results.BadRequest("Video file are required");
+                }
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string extension = Path.GetExtension(dto.VideoFile.FileName);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+                List<string> filesToCleanup = new List<string> { videoFileName, outputFileName };
+                try
+                {
+                    var command = ffmpegService.ChangeSpeedCommand();
+                    var result = await command.ExecuteAsync(new ChangeSpeedModel
+                    {
+                        InputFile = videoFileName,
+                        OutputFile = outputFileName,
+                        SpeedFactor =1.0/dto.UserSpeedFactor,
+                        VideoCodec = "libx264"
+                    });
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to change the speed: " + result.ErrorMessage, statusCode: 500);
+                    }
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error changing the video speed request");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in ChangeSpeed endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+
         }
     }
 }
