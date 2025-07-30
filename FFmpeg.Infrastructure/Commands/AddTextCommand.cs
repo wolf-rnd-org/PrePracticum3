@@ -12,34 +12,22 @@ namespace FFmpeg.Infrastructure.Commands
     public class AddTextCommand : BaseCommand, ICommand<AddTextModel>
     {
         private readonly ICommandBuilder _commandBuilder;
-
         public AddTextCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
-
         public async Task<CommandResult> ExecuteAsync(AddTextModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.InputFile) || string.IsNullOrWhiteSpace(model.OutputFile))
-            {
-                return new CommandResult
-                {
-                    IsSuccess = false,
-                    ErrorMessage = "Input and output files must be provided."
-                };
-            }
-
-            string drawTextFilter = $"drawtext=text='{model.Text}':" +
-                                    $"x={model.X}:y={model.Y}:" +
-                                    $"fontsize={model.FontSize}:" +
-                                    $"fontcolor={model.FontColor}";
-
-            _commandBuilder
+            string animationX = model.EnableAnimation
+                ? "x=w-t*100" // תזוזה מימין לשמאל – אפשר לשנות
+                : $"x={model.PositionX}";
+            string animationY = $"y={model.PositionY}";
+            string drawTextFilter = $"drawtext=text='{model.Text}':{animationX}:{animationY}:fontsize={model.FontSize}:fontcolor={model.FontColor}";
+            CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
-                .AddFilterComplex(drawTextFilter)
+                .AddOption($"-vf \"{drawTextFilter}\"")
                 .SetOutput(model.OutputFile);
-
             return await RunAsync();
         }
     }

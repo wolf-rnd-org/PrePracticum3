@@ -15,6 +15,9 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+
+        ICommand<AddTextModel> CreateAddTextCommand();
+
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -31,6 +34,8 @@ namespace FFmpeg.Infrastructure.Services
 
             _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
             _commandBuilder = new CommandBuilder(configuration);
+            if (_commandBuilder == null)
+                throw new Exception("CommandBuilder was null after construction!");
         }
 
         public ICommand<WatermarkModel> CreateWatermarkCommand()
@@ -41,5 +46,10 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
         }
+        public ICommand<AddTextModel> CreateAddTextCommand()
+        {
+            return new AddTextCommand(_executor, _commandBuilder);
+        }
+
     }
 }
