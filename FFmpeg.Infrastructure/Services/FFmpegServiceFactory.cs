@@ -34,7 +34,6 @@ namespace FFmpeg.Infrastructure.Services
         {
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string ffmpegPath = Path.Combine(baseDirectory, "external", "ffmpeg.exe");
-
             bool logOutput = bool.TryParse(configuration["FFmpeg:LogOutput"], out bool log) && log;
             _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
             _commandBuilder = new CommandBuilder(configuration);
