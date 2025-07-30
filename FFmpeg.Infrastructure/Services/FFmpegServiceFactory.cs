@@ -16,13 +16,13 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
-
         ICommand<CutVideoModel> CreateCutVideoCommand();
-
+        ICommand<RotationModel> CreateRotationCommand();
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
         ICommand<CreateGifModel> CreateGifCommand();
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
+ 
     }
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
@@ -52,6 +52,12 @@ namespace FFmpeg.Infrastructure.Services
             return new CutVideoCommand(_executor, _commandBuilder);
         }
 
+
+        public ICommand<RotationModel> CreateRotationCommand()
+        {
+            return new RotationCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
@@ -60,6 +66,7 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<TimestampModel> CreateTimestampCommand()
         {
             return new TimestampCommand(_executor, _commandBuilder);
+
         }
 
         public ICommand<CreateGifModel> CreateGifCommand()
