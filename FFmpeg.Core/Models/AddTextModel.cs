@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-
     public class AddTextModel
     {
         public string InputFile { get; set; }
