@@ -24,7 +24,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<RotationModel> CreateRotationCommand();
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
     }
-  
+
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
         private readonly FFmpegExecutor _executor;
@@ -34,7 +34,6 @@ namespace FFmpeg.Infrastructure.Services
         {
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string ffmpegPath = Path.Combine(baseDirectory, "external", "ffmpeg.exe");
-
             bool logOutput = bool.TryParse(configuration["FFmpeg:LogOutput"], out bool log) && log;
             _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
             _commandBuilder = new CommandBuilder(configuration);
@@ -44,7 +43,6 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
-
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
@@ -58,7 +56,6 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
-
         public ICommand<CutVideoModel> CreateCutVideoCommand()
         {
             return new CutVideoCommand(_executor, _commandBuilder);
@@ -73,8 +70,8 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new TimestampCommand(_executor, _commandBuilder);
         }
-  
-         public ICommand<SetVolumeModel> CreateSetVolumeCommand()
+
+        public ICommand<SetVolumeModel> CreateSetVolumeCommand()
         {
             return new SetVolumeCommand(_executor, _commandBuilder);
         }
