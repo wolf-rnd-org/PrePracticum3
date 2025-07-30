@@ -2,7 +2,6 @@
 using FFmpeg.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-
 namespace FFmpeg.Infrastructure.Services
 {
     public class FileService : IFileService
@@ -13,27 +12,21 @@ namespace FFmpeg.Infrastructure.Services
         private readonly string _inputPath;
         private readonly string _outputPath;
         private readonly string _tempPath;
-
         public FileService(IConfiguration configuration, ILogger logger)
         {
             _configuration = configuration;
             _logger = logger;
-
             _basePath = Environment.ExpandEnvironmentVariables(
                 _configuration["FFmpeg:Path"] ?? throw new InvalidOperationException("FFmpeg:Path configuration is missing"));
-
             Directory.CreateDirectory(_basePath);
-
             _inputPath = Path.Combine(_basePath, "Input");
             _outputPath = Path.Combine(_basePath, "Output");
             _tempPath = Path.Combine(_basePath, "Temp");
-
             // Ensure directories exist
             Directory.CreateDirectory(_inputPath);
             Directory.CreateDirectory(_outputPath);
             Directory.CreateDirectory(_tempPath);
         }
-
         /// <summary>
         /// Saves an uploaded file to the input directory
         /// </summary>
@@ -43,30 +36,25 @@ namespace FFmpeg.Infrastructure.Services
             {
                 throw new ArgumentException("File is empty", nameof(file));
             }
-
             string fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
             string fileName = await GenerateUniqueFileNameAsync(fileExtension);
             string filePath = Path.Combine(_inputPath, fileName);
-
             try
             {
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
-
                 _logger.LogInformation($"Saved file {fileName} ({file.Length} bytes)");
                 return fileName;
             }
             catch (Exception ex)
             {
-
                 _logger.LogInformation($"Saved file {fileName} ({file.Length} bytes)");
                 _logger.LogError(ex, $"Error saving file {fileName}");
                 throw new IOException($"Error saving file: {ex.Message}", ex);
             }
         }
-
         /// <summary>
         /// Gets the full path to a file in the input directory
         /// </summary>
