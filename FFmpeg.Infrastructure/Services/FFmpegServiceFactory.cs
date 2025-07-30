@@ -17,6 +17,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<WatermarkModel> CreateWatermarkCommand();
 
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+        ICommand<ExtractFrameModel> CreateExtractFrameCommand();
         ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
         ICommand<CreateGifModel> CreateGifCommand();
@@ -24,8 +25,9 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<CutVideoModel> CreateCutVideoCommand();
         ICommand<RotationModel> CreateRotationCommand();
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
+
         ICommand<ChangeSpeedModel> ChangeSpeedCommand();
- 
+
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -70,6 +72,11 @@ namespace FFmpeg.Infrastructure.Services
             return new RotationCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<ExtractFrameModel> CreateExtractFrameCommand()
+        {
+            return new ExtractFrameCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<TimestampModel> CreateTimestampCommand()
         {
             return new TimestampCommand(_executor, _commandBuilder);
@@ -78,6 +85,7 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<SetVolumeModel> CreateSetVolumeCommand()
         {
             return new SetVolumeCommand(_executor, _commandBuilder);
+
         }
 
         public ICommand<CreateGifModel> CreateGifCommand()
