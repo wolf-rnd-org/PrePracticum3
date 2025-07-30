@@ -31,6 +31,8 @@ namespace FFmpeg.Infrastructure.Services
 
         ICommand<ChangeSpeedModel> ChangeSpeedCommand();
 
+        ICommand<SplitScreenModel> CreateSplitScreenCommand();
+
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -114,6 +116,10 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ChangeSpeedCommand(_executor, _commandBuilder);
 
+        }
+        public ICommand<SplitScreenModel> CreateSplitScreenCommand()
+        {
+            return new SplitScreenCommand(_executor, _commandBuilder);
         }
     }
 }

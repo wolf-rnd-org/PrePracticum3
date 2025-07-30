@@ -64,6 +64,9 @@ namespace FFmpeg.API.Endpoints
                .WithMetadata(new RequestSizeLimitAttribute(104857600))
                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
 
+            app.MapPost("/api/video/split-screen", SplitScreen)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
         private static async Task<IResult> ReplaceGreenScreen(HttpContext context, [FromForm] ReplaceGreenScreenDto dto)
         {
@@ -698,5 +701,49 @@ HttpContext context,
      
 
        
+        private static async Task<IResult> SplitScreen(HttpContext context, [FromForm] SplitScreenDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null)
+                    return Results.BadRequest("Video file is required");
+
+                var videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                var extension = Path.GetExtension(dto.VideoFile.FileName);
+                var outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+
+                var filesToCleanup = new List<string> { videoFileName, outputFileName };
+
+                var command = ffmpegService.CreateSplitScreenCommand();
+                var result = await command.ExecuteAsync(new SplitScreenModel
+                {
+                    InputFile = videoFileName,
+                    OutputFile = outputFileName,
+                    DuplicateCount = dto.DuplicateCount,
+                    VideoCodec = "libx264"
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to create split screen: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                var fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in SplitScreen endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
     }
 }
