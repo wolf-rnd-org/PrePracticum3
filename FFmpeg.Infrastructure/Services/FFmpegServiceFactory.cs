@@ -15,19 +15,26 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
-
-        ICommand<CutVideoModel> CreateCutVideoCommand();
 
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
+        ICommand<ExtractFrameModel> CreateExtractFrameCommand();
+        ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
         ICommand<CreateGifModel> CreateGifCommand();
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+        ICommand<CutVideoModel> CreateCutVideoCommand();
+        ICommand<RotationModel> CreateRotationCommand();
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
+
+        ICommand<ChangeSpeedModel> ChangeSpeedCommand();
+
     }
+
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
         private readonly FFmpegExecutor _executor;
         private readonly ICommandBuilder _commandBuilder;
+
         public FFmpegServiceFactory(IConfiguration configuration, ILogger logger = null)
         {
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -36,25 +43,38 @@ namespace FFmpeg.Infrastructure.Services
             _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
             _commandBuilder = new CommandBuilder(configuration);
         }
+
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
+        {
+            return new ReverseVideoCommand(_executor, _commandBuilder);
+        }
+        public ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand()
+        {
+            return new ReplaceGreenScreenCommand(_executor, _commandBuilder);
         }
 
         public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
-
-
         public ICommand<CutVideoModel> CreateCutVideoCommand()
         {
             return new CutVideoCommand(_executor, _commandBuilder);
         }
 
-        public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
+        public ICommand<RotationModel> CreateRotationCommand()
         {
-            return new ReverseVideoCommand(_executor, _commandBuilder);
+            return new RotationCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ExtractFrameModel> CreateExtractFrameCommand()
+        {
+            return new ExtractFrameCommand(_executor, _commandBuilder);
         }
 
         public ICommand<TimestampModel> CreateTimestampCommand()
@@ -62,14 +82,21 @@ namespace FFmpeg.Infrastructure.Services
             return new TimestampCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<SetVolumeModel> CreateSetVolumeCommand()
+        {
+            return new SetVolumeCommand(_executor, _commandBuilder);
+
+        }
+
         public ICommand<CreateGifModel> CreateGifCommand()
         {
             return new CreateGifCommand(_executor, _commandBuilder);
         }
 
-        public ICommand<SetVolumeModel> CreateSetVolumeCommand()
+        public ICommand<ChangeSpeedModel> ChangeSpeedCommand()
         {
-            return new SetVolumeCommand(_executor, _commandBuilder);
+            return new ChangeSpeedCommand(_executor, _commandBuilder);
+
         }
     }
 }
