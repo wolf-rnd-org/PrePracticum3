@@ -36,9 +36,10 @@ namespace Ffmpeg.Command.Commands
             }
 
             _commandBuilder.SetInput(model.InputFile);
-            _commandBuilder.AddArguments("-q:a", "0");
-            _commandBuilder.AddArguments("-map", "a");
+            _commandBuilder.AddOption("-q:a 0");
+            _commandBuilder.AddOption("-map a");
             _commandBuilder.SetOutput(model.OutputFile);
+
 
             return await RunAsync();
         }
