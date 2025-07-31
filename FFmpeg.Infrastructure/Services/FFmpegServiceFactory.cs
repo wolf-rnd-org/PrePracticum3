@@ -23,6 +23,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<ExtractFrameModel> CreateExtractFrameCommand();
         ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
+        ICommand<BorderModel> CreateBorderCommand();
         ICommand<CreateGifModel> CreateGifCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
         ICommand<CutVideoModel> CreateCutVideoCommand();
@@ -101,6 +102,11 @@ namespace FFmpeg.Infrastructure.Services
             return new TimestampCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<BorderModel> CreateBorderCommand()
+        {
+            return new BorderCommand(_executor, _commandBuilder);
+        }
+            
         public ICommand<SetVolumeModel> CreateSetVolumeCommand()
         {
             return new SetVolumeCommand(_executor, _commandBuilder);
