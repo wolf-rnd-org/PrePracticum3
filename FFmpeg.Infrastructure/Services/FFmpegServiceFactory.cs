@@ -70,6 +70,7 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
+
         }
         public ICommand<AddTextModel> CreateAddTextCommand()
         {
