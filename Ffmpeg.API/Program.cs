@@ -1,6 +1,7 @@
 using Ffmpeg.Command;
 using FFmpeg.API.Endpoints;
 using FFmpeg.Core.Interfaces;
+using FFmpeg.Infrastructure.Commands;
 using FFmpeg.Infrastructure.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -31,6 +32,7 @@ builder.Services.Configure<FormOptions>(options =>
 });
 
 builder.Services.AddSingleton<Ffmpeg.Command.ILogger, Logger>();
+builder.Services.AddSingleton<ICommandBuilder, CommandBuilder>();
 
 // Register FFmpeg Services
 builder.Services.AddScoped<IFFmpegServiceFactory>(provider =>
@@ -41,7 +43,6 @@ builder.Services.AddScoped<IFFmpegServiceFactory>(provider =>
 
 // Add file service for handling temporary files
 builder.Services.AddScoped<IFileService, FileService>();
-
 
 var app = builder.Build();
 
@@ -55,7 +56,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapEndpoints();
-
 app.MapGet("/", () => { return "FFmpeg API is running"; });
 app.Run();
 
