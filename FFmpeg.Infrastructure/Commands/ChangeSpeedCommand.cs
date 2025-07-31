@@ -1,4 +1,3 @@
-﻿
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using FFmpeg.Infrastructure.Services;
@@ -13,32 +12,23 @@ using System.Threading.Tasks;
 
 namespace Ffmpeg.Command.Commands
 {
-    public class WatermarkCommand : BaseCommand, ICommand<WatermarkModel>
+    public class ChangeSpeedCommand : BaseCommand, ICommand<ChangeSpeedModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public WatermarkCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public ChangeSpeedCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
-        public async Task<CommandResult> ExecuteAsync(WatermarkModel model)
+        public async Task<CommandResult> ExecuteAsync(ChangeSpeedModel model)
         {
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
-                .SetInput(model.WatermarkFile)
-                .SetOverlay(model.XPosition, model.YPosition)
-                .AddOption($"-map 0:a?")
-                .AddOption($"-c:a copy");
-
-            if (model.IsVideo)
-            {
-                CommandBuilder
-                    .SetVideoCodec(model.VideoCodec);
-            }
-
-            CommandBuilder.SetOutput(model.OutputFile, model.IsVideo ? false : true);
+                .AddOption($"-vf \"setpts={model.SpeedFactor}*PTS\"")
+                .SetVideoCodec(model.VideoCodec)
+                .SetOutput(model.OutputFile);
 
             return await RunAsync();
         }
