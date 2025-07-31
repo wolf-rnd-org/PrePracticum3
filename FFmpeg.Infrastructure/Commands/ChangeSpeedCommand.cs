@@ -1,31 +1,33 @@
-﻿using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
+using FFmpeg.Infrastructure.Commands;
 using FFmpeg.Infrastructure.Services;
+using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFmpeg.Infrastructure.Commands
+namespace Ffmpeg.Command.Commands
 {
-    public class CreateGifCommand : BaseCommand, ICommand<CreateGifModel>
+    public class ChangeSpeedCommand : BaseCommand, ICommand<ChangeSpeedModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public CreateGifCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public ChangeSpeedCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
-        public async Task<CommandResult> ExecuteAsync(CreateGifModel model)
+        public async Task<CommandResult> ExecuteAsync(ChangeSpeedModel model)
         {
-            int fps = model.Fps.HasValue && model.Fps > 0 ? model.Fps.Value : 10;
-            int width = model.Width.HasValue && model.Width > 0 ? model.Width.Value : 320;
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
-                .AddOption($"-vf fps={fps},scale={width}:-1")
+                .AddOption($"-vf \"setpts={model.SpeedFactor}*PTS\"")
+                .SetVideoCodec(model.VideoCodec)
                 .SetOutput(model.OutputFile);
 
             return await RunAsync();

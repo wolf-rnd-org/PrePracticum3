@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    public class CreateGifModel
+    public class ChangeSpeedModel
     {
         public string InputFile { get; set; }
         public string OutputFile { get; set; }
-        public int? Fps { get; set; } = 10;
-        public int? Width { get; set; } = 320;
+        public double SpeedFactor { get; set; } // 0.5 = מהירות ×2, 2.0 = האטה ×0.5
+        public string VideoCodec { get; set; } = "libx264";
     }
 }
+
