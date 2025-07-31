@@ -16,9 +16,7 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
-
         ICommand<ChangeResolutionModel> CreateChangeResolutionCommand();
-
         ICommand<AddTextModel> CreateAddTextCommand();
         ICommand<ExtractFrameModel> CreateExtractFrameCommand();
         ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
@@ -29,11 +27,9 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<CutVideoModel> CreateCutVideoCommand();
         ICommand<RotationModel> CreateRotationCommand();
         ICommand<SetVolumeModel> CreateSetVolumeCommand();
-
         ICommand<ChangeSpeedModel> ChangeSpeedCommand();
-
         ICommand<SplitScreenModel> CreateSplitScreenCommand();
-
+        ICommand<AudioMixModel> CreateAudioMixCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -63,10 +59,12 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
         }
+
         public ICommand<AddTextModel> CreateAddTextCommand()
         {
             return new AddTextCommand(_executor, _commandBuilder);
         }
+
         public ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand()
         {
             return new ReplaceGreenScreenCommand(_executor, _commandBuilder);
@@ -76,6 +74,7 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
+
         public ICommand<CutVideoModel> CreateCutVideoCommand()
         {
             return new CutVideoCommand(_executor, _commandBuilder);
@@ -91,10 +90,9 @@ namespace FFmpeg.Infrastructure.Services
             return new ExtractFrameCommand(_executor, _commandBuilder);
         }
 
-
         public ICommand<ChangeResolutionModel> CreateChangeResolutionCommand()
         {
-            return new ChangeResolutionCommand(_executor,_commandBuilder);
+            return new ChangeResolutionCommand(_executor, _commandBuilder);
         }
 
         public ICommand<TimestampModel> CreateTimestampCommand()
@@ -106,7 +104,7 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new BorderCommand(_executor, _commandBuilder);
         }
-            
+
         public ICommand<SetVolumeModel> CreateSetVolumeCommand()
         {
             return new SetVolumeCommand(_executor, _commandBuilder);
@@ -123,9 +121,15 @@ namespace FFmpeg.Infrastructure.Services
             return new ChangeSpeedCommand(_executor, _commandBuilder);
 
         }
+
         public ICommand<SplitScreenModel> CreateSplitScreenCommand()
         {
             return new SplitScreenCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<AudioMixModel> CreateAudioMixCommand()
+        {
+            return new AudioMixCommand(_executor, _commandBuilder);
         }
     }
 }
