@@ -58,6 +58,12 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+        
+        public ICommand<ExtractAudioModel> CreateExtractAudioCommand()
+        {
+            return new ExtractAudioCommand(_executor, _commandBuilder);
+        }
+
 
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
