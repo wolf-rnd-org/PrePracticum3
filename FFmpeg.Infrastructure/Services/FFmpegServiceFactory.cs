@@ -15,6 +15,9 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+
+        ICommand<CreatePreviewCommand> CreatePreviewCommand();
+
         ICommand<ReverseVideoModel> CreateReverseVideoCommand();
 
         ICommand<ChangeResolutionModel> CreateChangeResolutionCommand();
@@ -41,6 +44,7 @@ namespace FFmpeg.Infrastructure.Services
         private readonly FFmpegExecutor _executor;
         private readonly ICommandBuilder _commandBuilder;
 
+
         public FFmpegServiceFactory(IConfiguration configuration, ILogger logger = null)
         {
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -59,9 +63,14 @@ namespace FFmpeg.Infrastructure.Services
             return new WatermarkCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<CreatePreviewModel> CreatePreviewCommand()
+        {
+            return new CreatePreviewCommand(_executor, _commandBuilder);
+        }
         public ICommand<ReverseVideoModel> CreateReverseVideoCommand()
         {
             return new ReverseVideoCommand(_executor, _commandBuilder);
+
         }
         public ICommand<AddTextModel> CreateAddTextCommand()
         {
@@ -94,7 +103,7 @@ namespace FFmpeg.Infrastructure.Services
 
         public ICommand<ChangeResolutionModel> CreateChangeResolutionCommand()
         {
-            return new ChangeResolutionCommand(_executor,_commandBuilder);
+            return new ChangeResolutionCommand(_executor, _commandBuilder);
         }
 
         public ICommand<TimestampModel> CreateTimestampCommand()
@@ -106,7 +115,7 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new BorderCommand(_executor, _commandBuilder);
         }
-            
+
         public ICommand<SetVolumeModel> CreateSetVolumeCommand()
         {
             return new SetVolumeCommand(_executor, _commandBuilder);
