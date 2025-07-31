@@ -14,12 +14,14 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<CreatePreviewCommand> CreatePreviewCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
         private readonly FFmpegExecutor _executor;
         private readonly ICommandBuilder _commandBuilder;
+        
 
         public FFmpegServiceFactory(IConfiguration configuration, ILogger logger = null)
         {

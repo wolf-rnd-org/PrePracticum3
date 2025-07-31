@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ffmpeg.Command.Commands;
 using FFmpeg.Infrastructure.Services;
+using FFmpeg.Core.Models;
 
 namespace FFmpeg.Infrastructure.Commands
 {
