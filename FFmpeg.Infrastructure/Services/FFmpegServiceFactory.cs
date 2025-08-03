@@ -21,7 +21,12 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<ExtractFrameModel> CreateExtractFrameCommand();
         ICommand<ReplaceGreenScreenModal> CreateReplaceGreenScreenCommand();
         ICommand<TimestampModel> CreateTimestampCommand();
+
+
+        ICommand<FadeEffectModel> CreateFadeEffectCommand();
+
         ICommand<BorderModel> CreateBorderCommand();
+
         ICommand<CreateGifModel> CreateGifCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
         ICommand<CutVideoModel> CreateCutVideoCommand();
@@ -95,6 +100,10 @@ namespace FFmpeg.Infrastructure.Services
             return new ChangeResolutionCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<FadeEffectModel> CreateFadeEffectCommand()
+        {
+            return new FadeEffectCommand(_executor, _commandBuilder);
+        }
         public ICommand<TimestampModel> CreateTimestampCommand()
         {
             return new TimestampCommand(_executor, _commandBuilder);
