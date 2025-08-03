@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    public class AudioMixModel
+    public class ExtractFrameModel
     {
-            public string InputFile1 { get; set; }
-            public string InputFile2 { get; set; }
+            public string InputFile { get; set; } 
+            public string TimeStamp { get; set; } 
             public string OutputFile { get; set; }
     }
 }

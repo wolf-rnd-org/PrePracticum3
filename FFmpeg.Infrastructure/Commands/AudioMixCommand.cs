@@ -21,24 +21,21 @@ namespace FFmpeg.Infrastructure.Commands
 
         public async Task<CommandResult> ExecuteAsync(AudioMixModel model)
         {
-            if (model.InputFiles == null || model.InputsCount < 2)
+            // בדיקת תקינות קלט
+            if (string.IsNullOrWhiteSpace(model.InputFile1) || string.IsNullOrWhiteSpace(model.InputFile2) || string.IsNullOrWhiteSpace(model.OutputFile))
             {
                 return new CommandResult
                 {
                     IsSuccess = false,
-                    ErrorMessage = "At least two input files are required for audio mixing."
+                    ErrorMessage = "Both input files and output file are required."
                 };
             }
-            // Add all input files
-            foreach (var inputFile in model.InputFiles)
-            {
-                _commandBuilder.SetInput(inputFile);
-            }
-            // Build the amix filter
-            string filter = $"amix=inputs={model.InputsCount}";
-            _commandBuilder.AddFilterComplex(filter);
-            // Set output file
-            _commandBuilder.SetOutput(model.OutputFile);
+            CommandBuilder = _commandBuilder
+                .SetInput(model.InputFile1)
+                .SetInput(model.InputFile2)
+                .AddFilterComplex("amix=inputs=2:duration=longest")
+                .AddOption("-c:a libmp3lame")
+                .SetOutput(model.OutputFile);
 
             return await RunAsync();
         }
