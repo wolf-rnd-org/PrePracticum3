@@ -1,10 +1,18 @@
+<<<<<<< HEAD
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+=======
+﻿
+>>>>>>> fa8c6c6 (format convertion)
 using Microsoft.AspNetCore.Mvc;
 using FFmpeg.API.DTOs;
 using FFmpeg.Core.Interfaces;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Services;
+<<<<<<< HEAD
+=======
+using FFmpeg.Infrastructure.Commands;
+>>>>>>> fa8c6c6 (format convertion)
 
 namespace FFmpeg.API.Endpoints
 {
@@ -25,6 +33,7 @@ namespace FFmpeg.API.Endpoints
                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
             app.MapPost("/api/video/volume", SetVolume)
                 .DisableAntiforgery()
+<<<<<<< HEAD
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
             app.MapPost("/api/video/reverse", ReverseVideo)
                 .DisableAntiforgery()
@@ -64,6 +73,26 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/audio/mix", MixAudio)
                .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+=======
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
+            app.MapPost("/convert-format", async (ConvertFormatRequest request) =>
+            {
+                var ffmpegPath = "ffmpeg"; // או נתיב מלא אם צריך, לדוגמה: @"C:\ffmpeg\bin\ffmpeg.exe"
+                var executor = new FFmpegExecutor(ffmpegPath);
+
+                var command = new ConvertFormatCommand(executor, request.InputFileName, request.OutputFileName);
+                var ffmpegArgs = command.BuildCommand();
+
+                var (success, output, error) = await executor.RunCommandAsync(ffmpegArgs);
+
+                if (!success)
+                    return Results.Problem("FFmpeg execution failed: " + error);
+
+                return Results.Ok(new { Message = "Conversion completed", Output = output });
+            });
+
+>>>>>>> fa8c6c6 (format convertion)
         }
         private static async Task<IResult> ReplaceGreenScreen(HttpContext context, [FromForm] ReplaceGreenScreenDto dto)
         {
