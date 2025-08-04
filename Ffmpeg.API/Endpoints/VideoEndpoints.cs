@@ -12,6 +12,7 @@ namespace FFmpeg.API.Endpoints
     {
         private const int MaxUploadSize = 104_857_600; // 100 MB
         private const int MaxUploadSizeForGif = 52_428_800; // 50 MB
+
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
@@ -64,6 +65,9 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/audio/mix", MixAudio)
                .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            app.MapPost("/api/video/createVideoFromPhotos", CreateVideoFromPhotos)
+              .DisableAntiforgery()
+              .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
         private static async Task<IResult> ReplaceGreenScreen(HttpContext context, [FromForm] ReplaceGreenScreenDto dto)
         {
@@ -863,6 +867,64 @@ HttpContext context,
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in MixAudio endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+        private static async Task<IResult> CreateVideoFromPhotos(HttpContext context, [FromForm] CreateVideoDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.ImageFiles == null || string.IsNullOrWhiteSpace(dto.OutputFile))
+                {
+                    return Results.BadRequest("Image files and output file name are required.");
+                }
+
+                // Save uploaded image files
+                List<string> imageFileNames = new List<string>();
+                foreach (var imageFile in dto.ImageFiles)
+                {
+                    string imageFileName = await fileService.SaveUploadedFileAsync(imageFile);
+                    imageFileNames.Add(imageFileName);
+                }
+
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(".mp4");
+                List<string> filesToCleanup = new List<string>(imageFileNames) { outputFileName };
+
+                try
+                {
+                    var command = ffmpegService.CreateVideoCommand();
+                    var result = await command.ExecuteAsync(new CreateVideoModel
+                    {
+                        ImageSequence = imageFileNames,
+                        OutputFile = outputFileName
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {CommandExecuted}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to create video from photos: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(fileBytes, "video/mp4", outputFileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing video creation from photos");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in CreateVideoFromPhotos endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }

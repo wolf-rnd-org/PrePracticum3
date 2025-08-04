@@ -30,6 +30,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<ChangeSpeedModel> ChangeSpeedCommand();
         ICommand<SplitScreenModel> CreateSplitScreenCommand();
         ICommand<AudioMixModel> CreateAudioMixCommand();
+        ICommand<CreateVideoModel> CreateVideoCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -130,6 +131,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<AudioMixModel> CreateAudioMixCommand()
         {
             return new AudioMixCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<CreateVideoModel> CreateVideoCommand()
+        {
+            return new CreateVideoCommand(_executor, _commandBuilder);
         }
     }
 }
